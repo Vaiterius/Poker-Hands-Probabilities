@@ -1,56 +1,61 @@
 import random
-from dataclasses import dataclass
-from enum import Enum, auto
 
-
-class Suit(Enum):
-    CLUBS = auto()
-    HEARTS = auto()
-    SPADES = auto()
-    DIAMONDS = auto()
-
-
-class Rank(Enum):
-    TWO = auto()
-    THREE = auto()
-    FOUR = auto()
-    FIVE = auto()
-    SIX = auto()
-    SEVEN = auto()
-    EIGHT = auto()
-    NINE = auto()
-    TEN = auto()
-    JACK = auto()
-    QUEEN = auto()
-    KING = auto()
-    ACE = auto()
-
-
-@dataclass
-class Card:
-    rank: Rank
-    suit: Suit
-
-    def __str__(self):
-        return f"{self.rank.name.lower()} of {self.suit.name.lower()}"
-
+from card import Card, Suit, Rank
+from hand_checker import HandChecker
 
 
 def main() -> None:
-    card_holder: list[Card] = []
+    # Only hold the values of all cards for reference. Make a duplicate deck of
+    # cards each time a game is played.
+    cards: list[Card] = generate_cards()
 
-    generate_cards(card_holder)
+    trial_royal_flushes(cards, num_trials=10)
+
+
+def trial_royal_flushes(cards: list[Card], num_trials: int) -> None:
+    hand: list[Card] = []
+    hands_dealt_per_trial: list[int] = []
+
+    for i in range(num_trials):
+        counter: int = 0
+        while True:
+            hand = generate_hand(cards)
+            if HandChecker.has_royal_flush(hand):
+                print("\nRoyal Flush found!")
+                print("HAND:")
+                for card in hand:
+                    print(card)
+                hands_dealt_per_trial.append(counter)
+                break
+            counter += 1
+        print(f"Trial #{i + 1}: {counter:,} hands dealt")
     
-    # TODO
+    print(f"Average hands dealt per trial: {round(sum(hands_dealt_per_trial) / len(hands_dealt_per_trial)):,}")
 
 
-def generate_cards(card_holder: list[Card]) -> None:
+
+def generate_hand(cards: list[Card]) -> list[Card]:
+    deck_copy: list[Card] = cards[:]
+    hand: list[Card] = []
+
+    for _ in range(5):
+        card: Card = deck_copy.pop(random.randint(0, len(deck_copy) - 1))
+        hand.append(card)
+
+    return hand
+
+
+def generate_cards() -> list[Card]:
     ranks: list[Rank] = list(Rank)
     suits: list[Suit] = list(Suit)
 
+    cards: list[Card] = []
+
     for rank in ranks:
         for suit in suits:
-            card_holder.append(Card(rank, suit))
+            cards.append(Card(rank, suit))
+    
+    return cards
 
 
 if __name__ == "__main__":
